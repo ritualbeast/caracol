@@ -1,0 +1,39 @@
+.inputField {
+    display: flex;
+    align-items: center;
+    padding-top: 18px;
+    padding-bottom: 16px;
+    border: 1px solid #bebcbc83;
+    border-radius: 4px;
+    margin-top: 20px;
+    margin-left: 24px;
+    margin-bottom: 20px;
+    width: 244px;
+    position: relative;
+  }
+  
+  .inputField input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    opacity: 1;
+    padding-left: 42px;
+  }
+  
+  .inputField .search-icon {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    padding-left: 2px;
+  }
+  
+  .search-icon {
+    margin-right: 10px;
+    color: #959595cf;
+  }
+  

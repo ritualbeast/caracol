@@ -1,0 +1,48 @@
+
+.container {
+  margin-top: 2%;
+  background-color: #f7f7f7;
+  padding: 5%;
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.form-control {
+  padding: 1%;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-top: 1%;
+  font-size: 15px;
+  font-weight: bold;
+}
+.formuser{
+  text-align: left;
+}
+
+.btn-primary:hover {
+  background-color: #784cf1;
+  
+}
+.form-label {
+  font-weight: bold;
+  font-size: 15px;
+}
+.btnblock{
+  padding: 5%;
+  background-color: rgb(42, 26, 217);
+  width: 100%;
+}
+
+.required-asterisk {
+  color: red;
+}

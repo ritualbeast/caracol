@@ -1,0 +1,21 @@
+.MuiDialogContent-root #alert-dialog-description-conf{
+    text-align: center !important;
+}
+#modal-center {
+    text-align: center;
+}
+.data-campos-group{
+    display: grid;
+    width: 65%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }  

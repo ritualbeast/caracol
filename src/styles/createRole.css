@@ -1,0 +1,80 @@
+.crearRol {
+    margin-top: 50px;
+    background-color: #fff;
+    padding: 5%;
+    margin-bottom: 6%;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    font-weight: bold;
+  }
+  
+  .form-control {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .crear-5 {
+    margin-bottom: 10px;
+  }
+
+  .elegir-opciones {
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .buttons-container {
+    margin-top: 20px;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0069d9;
+  }
+  
+  .btn-secondary {
+    background-color: #858586;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-left: 15px;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #727274;
+  }
+  
+  .div-crear{
+    background-color: white;
+    padding: 10px;
+  }
+
+  .invalid-input {
+  border-color: red !important;
+  }
+
+   
+  
+  .error-message {
+    color: red;
+  }
+  
