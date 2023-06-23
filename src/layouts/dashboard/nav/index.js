@@ -10,9 +10,8 @@ import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 
 import useResponsive from '../../../hooks/useResponsive';
-import navConfig from './config';
-import logo from '../../../assets/img/ic_goit.png';
-import '../../../styles/logo.css';
+import useNavConfig from './config';
+import logo from '../../../assets/img/goItLogo2Degrade (1).png';
 
 import account from '../../../_mock/account';
 
@@ -37,7 +36,7 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
-
+  const navConfig = useNavConfig();
   const isDesktop = useResponsive('up', 'lg');
 
   useEffect(() => {
@@ -54,20 +53,20 @@ export default function Nav({ openNav, onCloseNav }) {
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
       }}
     >
-      <Box sx={{ px: 2.5, py: 3, display: 'inline-flex', width: '100%' }}>
-  {logo && (
-    <Box
-      component="img"
-      src={logo}
-      sx={{ width: 180, height: 80 }}
-      className='logo'
-      color="inherit"
-    />
-  )}
-</Box>
+    <Box sx={{ px: 2.5, py: 3, display: 'inline-flex', width: '100%', paddingLeft: '40px', paddingTop: '35px', paddingBottom: '35px' }}>
+      {logo && (
+        <Box
+          component="img"
+          src={logo}
+          sx={{ width: 170, height: 60 }}
+          className='logo'
+          color="inherit"
+        />
+      )}
+    </Box>
 
 
-      <Box sx={{ mb: 5, mx: 2.5 }}>
+      <Box sx={{ mb: 5, mx: 2.5, marginTop: '2%' }}>
         <Link underline="none">
           <StyledAccount>
             <Box sx={{ ml: 2 }}>

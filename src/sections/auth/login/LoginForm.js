@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 // @mui
@@ -8,8 +8,7 @@ import { LoadingButton } from '@mui/lab';
 
 // components
 import Iconify from '../../../components/iconify';
-import { LoginToken } from '../../../services/Userservices';
-
+import { LoginToken, ValidarToken } from '../../../services/Userservices';
 
 // ----------------------------------------------------------------------
 
@@ -18,17 +17,16 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [usuario, setUsuario] = useState('');
   const [contrasenia, setContrasenia] = useState('');
-
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
       const response = await LoginToken(usuario, contrasenia);
-    
 
       if (response.success === true) {
         toast.success('Bienvenido');
-        navigate('/user', { replace: true });
+        navigate('/security/user', { replace: true });
       } else {
         const errorMessage = response.message;
         toast.error(errorMessage);
@@ -37,24 +35,17 @@ export default function LoginForm() {
       console.error(error);
     }
   };
-  
+
   const handleClick = () => {
     // Aquí puedes realizar alguna acción adicional antes de enviar el formulario, si es necesario
   };
 
   const sanitizeValue = (name, value) => {
     if (name === 'usuario' || name === 'contrasenia') {
-      // Eliminar espacios en blanco
-      let sanitizedValue = value.replace(/\s+/g, '');
-      
-      // Limitar la longitud a 10 caracteres
-      sanitizedValue = sanitizedValue.slice(0, 95);
-  
-      return sanitizedValue;
+      return value.replace(/\s+/g, '');
     }
     return value;
   };
-  
 
 
   return (

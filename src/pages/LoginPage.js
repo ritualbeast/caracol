@@ -1,15 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Link, Container, Typography, Divider, Stack, Button, Box } from '@mui/material';
+import { Container, Typography, Divider, Box } from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
-// components
-import Logo from '../components/logo';
-import Iconify from '../components/iconify';
 // sections
 import { LoginForm } from '../sections/auth/login';
-import logo from '../assets/img/ic_goit.png';
+import logo from '../assets/img/goItLogo2Degrade (1).png';
+import logoCorporativo from '../assets/img/logoCorporativo.png'
 
 // ----------------------------------------------------------------------
 
@@ -58,7 +56,7 @@ export default function LoginPage() {
               src={logo}
               sx={{
                 position: 'fixed',
-                width: 180, height: 80,
+                width: 180, height: 65,
                 top: { xs: 16, sm: 24, md: 40 },
                 left: { xs: 16, sm: 24, md: 170 },
               }}
@@ -74,7 +72,7 @@ export default function LoginPage() {
             <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
               Bienvenido 
             </Typography>
-            <img src="/assets/illustrations/illustration_login.png" alt="login" />
+            <img src={logoCorporativo} alt="login" />
           </StyledSection>
         )}
 

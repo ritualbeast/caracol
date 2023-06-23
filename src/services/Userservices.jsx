@@ -29,7 +29,6 @@ const LoginToken = async (usuario, contrasenia) => {
     localStorage.setItem('nombreUsuario', data.data.nombres);
     localStorage.setItem('correoUsuario', data.data.correo);
     await ValidarToken();
-  
     }
     return data; // Retornar los datos
     
@@ -41,7 +40,8 @@ const LoginToken = async (usuario, contrasenia) => {
 };
 
 
-const ValidarToken = async (info) => {
+const ValidarToken = async () => {
+  const nemonicoCanal = 'GOIT_SECURITY';
   try {
     const idUsuario = localStorage.getItem('data');
     const tokenUsuario = localStorage.getItem('token');
@@ -56,19 +56,22 @@ const ValidarToken = async (info) => {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        idUsuario
+        idUsuario,
+        nemonicoCanal
       })
     };
-    const response = await fetch('http://desa.goitsa.me:8988/goit-security-api/v2/autenticacion/validar-login', requestOptions);
+    const response = await fetch(process.env.REACT_APP_VALIDAR_LOGIN_URL, requestOptions);
     const data = await response.json();
     localStorage.setItem('tokenValidado', data.data.token);
     localStorage.setItem('nombreUsuario', data.data.nombres);
     localStorage.setItem('correoUsuario', data.data.correo);
+    console.log('data', data);
     await ConsultaUsuarios();
-    
+    return data;
 
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
@@ -204,8 +207,9 @@ const ObtenerUsuarioPorId = async (userId) => {
   }
 };
 
-const ActualizarUsuario = async (userId, datosUsuario) => {
+const ActualizarUsuario = async (userId, datosUsuario, Altera) => {
   console.log(datosUsuario);
+  console.log(Altera)
   const base64 = {
     encode: (text) => {
       return btoa(text);
@@ -233,6 +237,7 @@ const ActualizarUsuario = async (userId, datosUsuario) => {
       "tipoIdentificacion": datosUsuario.tipoIdentificacion,
       "identificacion": datosUsuario.identificacion,
       "area": datosUsuario.area,
+      "idUsuarioAltera": Altera
     };
 
     const requestOptions = {

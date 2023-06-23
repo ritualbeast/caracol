@@ -40,6 +40,7 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import CreateRole from './roles/createRole';
 import ModificarRole from './roles/ModificarRole';
+import { ValidarToken } from '../services/Userservices';
 import { ConsultarRoles, EliminarRol } from '../services/ServicesRol';
 
 // ----------------------------------------------------------------------
@@ -109,6 +110,10 @@ export default function UserPage() {
   const [valorcheck2, setValorcheck2] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [isNotFound, setIsNotFound] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedEstado, setSelectedEstado] = useState('A');
+  const [showEstadoOptions, setShowEstadoOptions] = useState(false);
+  const [validarPermiso, setvalidarPermiso] = useState([]);
   const [checkedItems, setCheckedItems] = useState({
     nombre: '',
     descripcion: '',
@@ -151,7 +156,7 @@ export default function UserPage() {
     }
   };
 
-  // const filteredUsers = applySortFilter(datosUser, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(datosUser, getComparator(order, orderBy), filterName);
   // // const isNotFound = !filteredUsers.length && !!filterName;
 
   const handleOpenModal = () => {
@@ -216,47 +221,51 @@ export default function UserPage() {
     }
   };
 
-const handleEliminar = async () => {
-  try {
-    const response = await EliminarRol(selectedUserId);
-    if (response.success === true) {
-      fetchData();
-      handleCloseEliminar();
-      
+  const handleEliminar = async () => {
+    try {
+      const response = await EliminarRol(selectedUserId);
+      if (response.success === true) {
+        fetchData();
+        handleCloseEliminar();
+        
+      }
+      else if (response.success === false) {
+        toast.error(`${response.message}`
+          , {
+            position: "top-right",
+            autoClose: 2000,
+          });
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error( `${error}` , {
+        position: "top-right",
+        autoClose: 2000,
+      });
+
     }
-    else if (response.success === false) {
-      toast.error(`${response.message}`
-        , {
-          position: "top-right",
-          autoClose: 2000,
-        });
-    }
+  };
 
-  } catch (error) {
-    console.error(error);
-    toast.error( `${error}` , {
-      position: "top-right",
-      autoClose: 2000,
-    });
-
-  }
-};
-
-   const paginatedData = datosUser.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const paginatedData = datosUser.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   
-  const [selectedOption, setSelectedOption] = useState('');
   const options = [
     { value: 'No', label: 'Nombres' },
     { value: 'De', label: 'Descripcion' },
     { value: 'E', label: 'Estado' },
+  ];
+  
+  const estados = [
+    { value: 'A', label: 'Activo' },
+    { value: 'I', label: 'Inactivo' },
+    { value: 'B', label: 'Bloqueado' },
   ];
 
   const getOptionLabel = (value) => {
     const option = options.find((opt) => opt.value === value);
     return option ? option.label : '';
   };
-  const [selectedEstado, setSelectedEstado] = useState('');
-  const [showEstadoOptions, setShowEstadoOptions] = useState(false);
+  
   const handleOptionChange = (event) => {
     const { value } = event.target;
     setSelectedOption(value);
@@ -282,6 +291,24 @@ const handleEliminar = async () => {
     setFilterName(value);
   };
 
+  useEffect(() => { 
+    validarToken();
+  }, []);
+
+   // crear consumo validarToken
+   const validarToken = async () => {
+     try {
+       const response = await  ValidarToken();
+       setvalidarPermiso(response.data.listPermisos);
+       console.log(response.data.listPermisos)
+     } catch (error) {
+       console.error(error);
+     }
+   };
+
+   const isValidCreateRol = validarPermiso.some((permiso) => permiso.idPermiso === 9);
+   const isValidViewRol = validarPermiso.some((permiso) => permiso.idPermiso === 11);
+
   return (
     <>
       <ToastContainer />
@@ -289,19 +316,22 @@ const handleEliminar = async () => {
         <title> Security </title>
       </Helmet>
 
+      {isValidViewRol && (
       <Container>
           <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
             <Typography variant="h4" gutterBottom>
               Roles de Usuario
             </Typography>
+            {isValidCreateRol && (
             <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}
             onClick={handleOpenModal}
             >
               Nuevo Rol
             </Button>
+            )}
           </Stack>
 
-          <Card>
+            <Card>
             <div style={{ display: 'flex', alignItems: 'center', padding: '20px' }}>
               <FormControl variant="outlined" style={{ width: '20%' }}>
                 <InputLabel id="select-label">Filtrar por</InputLabel>
@@ -334,25 +364,31 @@ const handleEliminar = async () => {
             {selectedOption === 'E' && (
               <>
                 <FormControl component="fieldset" style={{ marginLeft: '1rem' }}>
-                  <FormLabel component="legend">Estado</FormLabel>
-                  <RadioGroup
+                  <InputLabel id="select-label">Estado</InputLabel>
+                  <Select
                     aria-label="estado"
                     name="estado"
                     value={selectedEstado}
                     onChange={handleEstadoChange}
-                    style={{ flexDirection: 'row' }}
+                    label="Seleccione un estado"
+                    MenuProps={{
+                      anchorOrigin: {
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'left',
+                      },
+                      getContentAnchorEl: null,
+                    }}
                   >
-                    <FormControlLabel
-                      value="A"
-                      control={<Radio />}
-                      label="Activo"
-                    />
-                    <FormControlLabel
-                      value="I"
-                      control={<Radio />}
-                      label="Inactivo"
-                    />
-                  </RadioGroup>
+                    {estados.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </FormControl>
               </>
             )}
@@ -360,7 +396,6 @@ const handleEliminar = async () => {
               <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
             )          
             }
-              
               <Button style={{ margin: '0 0 0 1rem' }} variant="contained" onClick={handleFiltrar} disabled={isButtonDisabled}>
                 Filtrar
               </Button>
@@ -405,9 +440,11 @@ const handleEliminar = async () => {
                           <TableCell>{user.nemonico}</TableCell>
                           <TableCell>{user.estado}</TableCell>
                           <TableCell align="center">
+                          {isValidCreateRol && (
                             <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, user.idRol)}>
                               <Iconify icon={'eva:more-vertical-fill'} />
                             </IconButton>
+                          )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -429,6 +466,7 @@ const handleEliminar = async () => {
               />
             </Card>
       </Container>
+      )}
 
       <Menu
         open={Boolean(open)}

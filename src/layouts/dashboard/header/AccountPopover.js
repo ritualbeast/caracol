@@ -17,7 +17,7 @@ export default function AccountPopover() {
   const handleClose = () => {
     setOpen(null);
     localStorage.clear();
-    window.location.href = '/login';
+    window.location.href = '/security/login';
   };
   const handleClose2 = () => {
     setOpen(null);

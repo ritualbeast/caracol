@@ -9,11 +9,11 @@ import Select from 'react-select';
 import PersonIcon from '@material-ui/icons/Person';
 import Empresas from '../../_mock/empresas';
 import { ConsultarRolUsuario, ActualizarRolUsuario } from '../../services/Roleservices';
-import { ObtenerUsuarioPorId, ActualizarUsuario, ConsultarArea } from '../../services/Userservices';
+import { ObtenerUsuarioPorId, ActualizarUsuario, ConsultarArea, ValidarToken } from '../../services/Userservices';
 import { ConsultarRoles } from '../../services/ServicesRol';
 
 const ModificarUser = (props) => {
-  const { handleCloseModificar, userId, userIdRol, handleRefresh } = props;
+  const { handleCloseModificar, userId, userIdRol, handleRefresh, disableUser } = props;
   const [datosRecibidosporId, setDatosRecibidosporId] = useState([]);
   const [error, setError] = useState("");
   const [camposIncompletos, setCamposIncompletos] = useState([]);
@@ -34,11 +34,10 @@ const ModificarUser = (props) => {
   });
   const [formStateRol, setFormStateRol] = useState([]);
   const [formStateRolBase, setFormStateRolBase] = useState([]);
-
   const [consultaRol, setConsultaRol] = useState([]);
   const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState([]);
-
   const [userName, setUserName] = useState(localStorage.getItem('nombreUsuario'));
+  // const [validarPermiso, setvalidarPermiso] = useState([]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -98,7 +97,7 @@ const ModificarUser = (props) => {
     setFormStateRol(objeTemp);
   }, [opcionesSeleccionadas]);
 
-  
+  const Altera = localStorage.getItem('data')
   const fetchData = async () => {
     try {
       const response = await ObtenerUsuarioPorId(userId);
@@ -119,18 +118,18 @@ const ModificarUser = (props) => {
         area: data.data.area,
       });
       setTipoIdentificacionSeleccionado(data.data.tipoIdentificacion);
-  
+      console.log(data)
     } catch (error) {
       console.error(error);
     }
-  };  
+  };
 
   const sendData = async () => {
     try {
       const response = await ActualizarUsuario(userId, formState);
-      
+      console.log(response.success);
       const responseRol = await ActualizarRolUsuario(userIdRol, formStateRol)
-      
+      console.log(responseRol.success);
     } catch (error) {
       console.error(error);
     }
@@ -141,8 +140,7 @@ const ModificarUser = (props) => {
     console.log (formState);
   
     try {
-      const response = await ActualizarUsuario(userId, formState);
-      
+      const response = await ActualizarUsuario(userId, formState, Altera);
       if (response.success === true) {
         toast.success(`${response.message}`, {
           // Configuración del toast
@@ -172,15 +170,11 @@ const ModificarUser = (props) => {
       }
     
       // Actualizar el rol existente
-      
-
       let objSendI = [];
       formStateRolBase.forEach(element => {
         let validate=false;
         formStateRol.forEach(el => {
           if (element.idRol === el.idRol) { 
-                 
-
             validate=true
           }   
         });
@@ -189,8 +183,6 @@ const ModificarUser = (props) => {
         if (!validate) objSendI.push(element);
       });
 
-
-
       let objSend = [];
 
       if (objSendI.length !== 0) {
@@ -198,11 +190,9 @@ const ModificarUser = (props) => {
         objSendI.forEach((data) =>{
           objSend.push(data);
         })
-        
       }else{
         objSend = formStateRol
       }
-
 
       const responseActualizarRol = await ActualizarRolUsuario(userId, objSend);
 
@@ -263,9 +253,10 @@ const ModificarUser = (props) => {
   };
 
   const opcionesRol = consultaRol
-  .filter((rol) => rol.estado === "A")
+  .filter((rol) => rol.estado === "ACTIVO")
   .sort((a, b) => a.nombre.localeCompare(b.nombre))
   .map((rol) => ({ value: rol.nombre, label: rol.nombre }));
+  console.log(opcionesRol)
   
   const handleOptionChange = (selectedOptions) => {
     setOpcionesSeleccionadas(selectedOptions);
@@ -290,6 +281,21 @@ const ModificarUser = (props) => {
         console.error('Error al consultar los canales:', error);
       }
     };
+
+    // useEffect(() => { 
+    //   validarToken();
+    // }, []);
+  
+    // // crear consumo validarToken
+    // const validarToken = async () => {
+    //   try {
+    //     const response = await  ValidarToken();
+    //     setvalidarPermiso(response.data.idUsuario);
+    //     console.log(response.data.idUsuario)
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
   
   return (
     <>
@@ -437,6 +443,7 @@ const ModificarUser = (props) => {
                 <Form.Label>Estado  <span className="required-asterisk">*</span></Form.Label>
                 <Form.Control
                   as="select"
+                  disabled={!disableUser}
                   name="estado"
                   value={formState.estado}
                   onChange={handleChange}

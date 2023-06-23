@@ -21,7 +21,7 @@ import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 
-import { ConsultaUsuarios, ValidarToken, EliminarUsuario, ObtenerUsuarioPorId } from '../services/Userservices';
+import { ConsultaUsuarios, ValidarToken, EliminarUsuario } from '../services/Userservices';
 // mock
 import USERLIST from '../_mock/user';
 import CreateUser from './userPages/createUser';
@@ -91,24 +91,35 @@ export default function UserPage() {
   const [isSelectUsed, setIsSelectUsed] = useState(false);
   const [isToolbarUsed, setIsToolbarUsed] = useState(false);
   const isButtonDisabled = !(isSelectUsed && isToolbarUsed);
-  const [valorcheck, setValorcheck] = useState([]);
-  const [valorcheck2, setValorcheck2] = useState('N');
   const [idUsuario, setIdUsuario] = useState('');
+  const [idUsuarioLog, setIdUsuarioLog] = useState(localStorage.getItem('data'));
   const [isNotFound, setIsNotFound] = useState(false);
-  const [checkedItems, setCheckedItems] = useState({
-    nombres: '',
-    correo: '',
-    estado: '',
-  });
+  const [selectedEstado, setSelectedEstado] = useState('A');
+  const [showEstadoOptions, setShowEstadoOptions] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('');
+  const [validarPermiso, setvalidarPermiso] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [disableEliminar, setDisableEliminar] = useState(false);
 
   const handleOpenMenu = (event, userId) => {
+    console.log(userId);
+    console.log(idUsuario);
+    setIdUsuario(userId)
+
+    if (userId !== idUsuarioLog) {
+      setDisableEliminar(true);
+    } else {
+      setDisableEliminar(false);
+    }
+  
     setOpen(event.currentTarget);
-    setIdUsuario(userId);
+    setSelectedUserId(userId);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
   };
+
   const handleOpenEliminar = () => {
     setOpenEliminar(true);
     handleCloseMenu();
@@ -136,7 +147,7 @@ export default function UserPage() {
     }
   };
 
-  const filteredUsers = applySortFilter(datosUser, getComparator(order, orderBy), filterName);
+  // const filteredUsers = applySortFilter(datosUser, getComparator(order, orderBy), filterName);
 
   // const isNotFound = !filteredUsers.length && !!filterName;
 
@@ -147,6 +158,7 @@ export default function UserPage() {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
+
   const handleOpenModificar = () => {
     setOpenModificar(true);
     handleCloseMenu();
@@ -168,6 +180,7 @@ export default function UserPage() {
       window.location.href = "/login";
     }
   }
+
   const fetchData = async () => {
     try {
       // clear checkitems
@@ -181,113 +194,116 @@ export default function UserPage() {
     }
   };
 
-const handleFiltrar = async () => {
-  try {
-    const response = await ConsultaUsuarios(filterName, selectedOption);
-    if (response.data.row.length === 0) {
-      toast.error(`No se encontraron resultados para la busqueda: ${filterName}`, {
-        autoClose: 1500,
+  const handleFiltrar = async () => {
+    try {
+      const response = await ConsultaUsuarios(filterName, selectedOption);
+      if (response.data.row.length === 0) {
+        toast.error(`No se encontraron resultados para la busqueda: ${filterName}`, {
+          autoClose: 1500,
+        });
+      } else if (response.success === true) {
+        setDatosUser(response.data.row);
+      }
+      else if (response.success === false) {
+        toast.error(`${response.message}`
+          , {
+            position: "bottom-right",
+            autoClose: 2000,
+          });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEliminar = async () => {
+    try {
+      const response = await EliminarUsuario(idUsuario);
+      if (response.success === true) {
+        fetchData();
+        handleCloseEliminar();
+        
+      }
+      else if (response.success === false) {
+        toast.error(`${response.message}`
+          , {
+            position: "top-right",
+            autoClose: 2000,
+          });
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error( `${error}` , {
+        position: "top-right",
+        autoClose: 2000,
       });
-      
-    } else if (response.success === true) {
-      
-      setDatosUser(response.data.row);
-      // setIsNotFound(false);
-      
+
     }
+  };
 
-     else if (response.success === false) {
-      toast.error(`${response.message}`
-        , {
-          position: "bottom-right",
-          autoClose: 2000,
+  const paginatedData = datosUser.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  // recibir datos del filtro
+  const options = [
+    { value: 'N', label: 'Nombres' },
+    { value: 'C', label: 'Correo' },
+    { value: 'E', label: 'Estado' },
+  ];
 
-        });
-    }
+  const estados = [
+    { value: 'A', label: 'Activo' },
+    { value: 'I', label: 'Inactivo' },
+    { value: 'B', label: 'Bloqueado' },
+  ];
 
+  const getOptionLabel = (value) => {
+    const option = options.find((opt) => opt.value === value);
+    return option ? option.label : '';
+  };
+
+  const handleOptionChange = (event) => {
+    const { value } = event.target;
+    setSelectedOption(value);
+    setIsSelectUsed(true);
+    const option = event.target.value;
+      setSelectedOption(option);
+
+      if (option === 'E') {
+        setShowEstadoOptions(true);
+        setIsToolbarUsed(true);
+
+      } else if (option !== 'E') 
+      {
+        setShowEstadoOptions(false);
+        setIsToolbarUsed(false);
+      }
+  };
+
+  const handleEstadoChange = (event) => {
+    const { value } = event.target;
+    setSelectedEstado(value);
+    setIsSelectUsed(true);
     
-  } catch (error) {
-    console.error(error);
-  }
-};
+    setFilterName(value);
+  };
 
-const handleEliminar = async () => {
-  try {
-    const response = await EliminarUsuario(idUsuario);
-    
-    if (response.success === true) {
-      fetchData();
-      handleCloseEliminar();
-      
+  useEffect(() => { 
+    validarToken();
+  }, []);
+
+  // crear consumo validarToken
+  const validarToken = async () => {
+    try {
+      const response = await ValidarToken();
+      setvalidarPermiso(response.data.listPermisos);
+      console.log(response.data.listPermisos);
+    } catch (error) {
+      console.error(error);
     }
-    else if (response.success === false) {
-      toast.error(`${response.message}`
-        , {
-          position: "top-right",
-          autoClose: 2000,
-        });
-    }
-
-  } catch (error) {
-    console.error(error);
-    toast.error( `${error}` , {
-      position: "top-right",
-      autoClose: 2000,
-    });
-
-  }
-};
-
-
-const paginatedData = datosUser.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-
-// recibir datos del filtro
-
-const [selectedOption, setSelectedOption] = useState('');
-const options = [
-  { value: 'N', label: 'Nombres' },
-  { value: 'C', label: 'Correo' },
-  { value: 'E', label: 'Estado' },
-];
-
-const estados = [
-  { value: 'A', label: 'Activo' },
-  { value: 'I', label: 'Inactivo' },
-  { value: 'B', label: 'Bloqueado' },
-];
-
-const getOptionLabel = (value) => {
-  const option = options.find((opt) => opt.value === value);
-  return option ? option.label : '';
-};
-const [selectedEstado, setSelectedEstado] = useState('A');
-const [showEstadoOptions, setShowEstadoOptions] = useState(false);
-const handleOptionChange = (event) => {
-  const { value } = event.target;
-  setSelectedOption(value);
-  setIsSelectUsed(true);
-  const option = event.target.value;
-    setSelectedOption(option);
-
-    if (option === 'E') {
-      setShowEstadoOptions(true);
-      setIsToolbarUsed(true);
-
-    } else if (option !== 'E') 
-    {
-      setShowEstadoOptions(false);
-      setIsToolbarUsed(false);
-    }
-};
-
-const handleEstadoChange = (event) => {
-  const { value } = event.target;
-  setSelectedEstado(value);
-  setIsSelectUsed(true);
+  };
   
-  setFilterName(value);
-};
-
+  const isValidCreateUser = validarPermiso.some((permiso) => permiso.idPermiso === 8);
+  const isValidViewUser = validarPermiso.some((permiso) => permiso.idPermiso === 10);
 
   return (    
     <>
@@ -296,6 +312,7 @@ const handleEstadoChange = (event) => {
         <title> Security </title>
       </Helmet>
       
+      {isValidViewUser && (
       <Container>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -303,11 +320,13 @@ const handleEstadoChange = (event) => {
             Gestion de Usuarios
           </Typography>
           
+          {isValidCreateUser && (
           <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}
-          onClick={()=>handleOpenModal(true)}
+            onClick={()=>handleOpenModal(true)}
           >
             Nuevo Usuario
           </Button>
+          )}
         </Stack>
 
         <Card>
@@ -345,29 +364,29 @@ const handleEstadoChange = (event) => {
             <FormControl component="fieldset" style={{ marginLeft: '1rem' }}>
               <InputLabel id="select-label">Estado</InputLabel>
               <Select
-              aria-label="estado"
-              name="estado"
-              value={selectedEstado}
-              onChange={handleEstadoChange}
-              label="Seleccione un estado"
-              MenuProps={{
-                anchorOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'left',
-                },
-                getContentAnchorEl: null,
-              }}
-            >
-              {estados.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
+                aria-label="estado"
+                name="estado"
+                value={selectedEstado}
+                onChange={handleEstadoChange}
+                label="Seleccione un estado"
+                MenuProps={{
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  },
+                  getContentAnchorEl: null,
+                }}
+              >
+                {estados.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
             </FormControl>
           </>
         )}
@@ -375,8 +394,6 @@ const handleEstadoChange = (event) => {
           <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
         )          
         }
-
-          
           <Button style={{ margin: '0 0 0 1rem' }} variant="contained" onClick={handleFiltrar} disabled={isButtonDisabled}>
             Filtrar
           </Button>
@@ -413,20 +430,21 @@ const handleEstadoChange = (event) => {
                 </TableBody>
               ) : (
                 <TableBody>
-                  {Array.isArray(paginatedData) && paginatedData.map((user, index) => (
-                    <TableRow key={user.idUsuario}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{user.nombres}</TableCell>
-                      <TableCell>{user.apellidos}</TableCell>
-                      <TableCell>{user.correo}</TableCell>
-                      <TableCell>{user.estado}</TableCell>
-                      <TableCell align="center">
-                        <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, user.idUsuario)}>
-                          <Iconify icon={'eva:more-vertical-fill'} />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {Array.isArray(paginatedData) &&
+                    paginatedData.map((user, index) => (
+                      <TableRow key={user.idUsuario}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{user.nombres}</TableCell>
+                        <TableCell>{user.apellidos}</TableCell>
+                        <TableCell>{user.correo}</TableCell>
+                        <TableCell>{user.estado}</TableCell>
+                        <TableCell align="center">
+                            <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, user.idUsuario)}>
+                              <Iconify icon={'eva:more-vertical-fill'} />
+                            </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               )}
             </Table>
@@ -446,34 +464,37 @@ const handleEstadoChange = (event) => {
           />
         </Card>
       </Container>
+      )}
 
-      <Menu
-        open={Boolean(open)}
-        onClose={handleCloseMenu}
-        anchorEl={open}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
+        <Menu
+          open={Boolean(open)}
+          onClose={handleCloseMenu}
+          anchorEl={open}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 1,
+              width: 140,
+              '& .MuiMenuItem-root': {
+                px: 1,
+                typography: 'body2',
+                borderRadius: 0.75,
+              },
             },
-          },
-        }}
-      >
+          }}
+        >
         <MenuItem onClick={handleOpenModificar}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Editar
         </MenuItem>
-
+        
+        {disableEliminar && (
         <MenuItem sx={{ color: 'error.main' }} onClick={handleOpenEliminar}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Eliminar
         </MenuItem>
+        )}
       </Menu>
 
       <Modal
@@ -531,12 +552,14 @@ const handleEstadoChange = (event) => {
           <ModificarUser
             handleCloseModificar={handleCloseModificar} 
             userId={idUsuario}
+            disableUser={disableEliminar}
             handleRefresh = {fetchData}
           />
           
         </Box>
         
       </Modal>
+
       <Modal
         open={openEliminar}
         onClose={handleCloseEliminar}
